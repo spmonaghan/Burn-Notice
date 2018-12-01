@@ -267,7 +267,7 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
 
                              //SM: Converted incoming UART data to integer; added to cumulative exposure
                              int UV = Integer.parseInt(text);
-                            calculated_exposure = UV + calculated_exposure;
+                             calculated_exposure = UV + calculated_exposure;
                          } catch (Exception e) {
                              Log.e(TAG, e.toString());
                          }
