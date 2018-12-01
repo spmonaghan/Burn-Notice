@@ -69,5 +69,8 @@
     <string name="ble_not_supported">Bluetooth Low Energy not supported</string>
     <string name="scan">Scan</string>
     <string name="cancel">Cancel</string>
+    <string name="Reset">Reset Exposure</string>
+    <string name="exposure">30</string>
+    <string name="exposure_percent">30</string>
     
 </resources>

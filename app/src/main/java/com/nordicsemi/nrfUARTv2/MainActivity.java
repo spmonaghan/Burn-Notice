@@ -63,6 +63,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -75,6 +76,7 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
     private static final int UART_PROFILE_CONNECTED = 20;
     private static final int UART_PROFILE_DISCONNECTED = 21;
     private static final int STATE_OFF = 10;
+    private static int calculated_exposure = 0;
 
     TextView mRemoteRssiVal;
     RadioGroup mRg;
@@ -84,8 +86,9 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
     private BluetoothAdapter mBtAdapter = null;
     private ListView messageListView;
     private ArrayAdapter<String> listAdapter;
-    private Button btnConnectDisconnect,btnSend;
+    private Button btnConnectDisconnect,btnSend,btnReset;
     private EditText edtMessage;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -96,13 +99,15 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
             finish();
             return;
         }
-        messageListView = (ListView) findViewById(R.id.listMessage);
-        listAdapter = new ArrayAdapter<String>(this, R.layout.message_detail);
-        messageListView.setAdapter(listAdapter);
-        messageListView.setDivider(null);
+        //SM: disabled all messaging functions
+//        messageListView = (ListView) findViewById(R.id.listMessage);
+//        listAdapter = new ArrayAdapter<String>(this, R.layout.message_detail);
+//        messageListView.setAdapter(listAdapter);
+//        messageListView.setDivider(null);
         btnConnectDisconnect=(Button) findViewById(R.id.btn_select);
-        btnSend=(Button) findViewById(R.id.sendButton);
-        edtMessage = (EditText) findViewById(R.id.sendText);
+//        btnSend=(Button) findViewById(R.id.sendButton);
+//        edtMessage = (EditText) findViewById(R.id.sendText);
+        btnReset=(Button) findViewById(R.id.button_reset);
         service_init();
 
      
@@ -135,31 +140,41 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
             }
         });
         // Handle Send button
-        btnSend.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-            	EditText editText = (EditText) findViewById(R.id.sendText);
-            	String message = editText.getText().toString();
-            	byte[] value;
-				try {
-					//send data to service
-					value = message.getBytes("UTF-8");
-					mService.writeRXCharacteristic(value);
-					//Update the log with time stamp
-					String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
-					listAdapter.add("["+currentDateTimeString+"] TX: "+ message);
-               	 	messageListView.smoothScrollToPosition(listAdapter.getCount() - 1);
-               	 	edtMessage.setText("");
-				} catch (UnsupportedEncodingException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-                
-            }
+        //SM: Disabled Send button handler
+//        btnSend.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//            	EditText editText = (EditText) findViewById(R.id.sendText);
+//            	String message = editText.getText().toString();
+//            	byte[] value;
+//				try {
+//					//send data to service
+//					value = message.getBytes("UTF-8");
+//					mService.writeRXCharacteristic(value);
+//					//Update the log with time stamp
+//					String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
+//					listAdapter.add("["+currentDateTimeString+"] TX: "+ message);
+//               	 	messageListView.smoothScrollToPosition(listAdapter.getCount() - 1);
+//               	 	edtMessage.setText("");
+//				} catch (UnsupportedEncodingException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//
+//            }
+//        });
+     btnReset.setOnClickListener(new View.OnClickListener() {
+         final ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressBar);
+         final TextView progressPercent = (TextView) findViewById(R.id.progressPercent);
+         @Override
+         public void onClick(View v) {
+             calculated_exposure = 0;
+             progressBar.setProgress (0);
+             progressPercent.setText("0 %");
+         }
         });
-     
         // Set initial UI state
-        
+        updateProgress();
     }
     
     //UART service connected/disconnected
@@ -250,6 +265,9 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
 //                        	 	listAdapter.add("["+currentDateTimeString+"] RX: "+text);
 //                        	 	messageListView.smoothScrollToPosition(listAdapter.getCount() - 1);
 
+                             //SM: Converted incoming UART data to integer; added to cumulative exposure
+                             int UV = Integer.parseInt(text);
+                            calculated_exposure = UV + calculated_exposure;
                          } catch (Exception e) {
                              Log.e(TAG, e.toString());
                          }
@@ -280,6 +298,46 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
         intentFilter.addAction(UartService.ACTION_DATA_AVAILABLE);
         intentFilter.addAction(UartService.DEVICE_DOES_NOT_SUPPORT_UART);
         return intentFilter;
+    }
+
+    // AG: Creating method to continuously update progress bar
+    private void updateProgress() {
+        final ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        final TextView progressPercent = (TextView) findViewById(R.id.progressPercent);
+
+        Thread progressThread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                while (true) {
+                    // AG: Update progress bar
+                    progressBar.setProgress(calculated_exposure);
+                    calculated_exposure = calculated_exposure+10;
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            // AG: Change % value of progress TextView
+
+                            progressPercent.setText(String.valueOf(progressBar.getProgress()) + " %");
+
+                            // AG: If dangerous exposure, send notification
+                            // SM: Disabled until needed
+//                            if (calculated_exposure >= 80 & !notification_sent) {
+//                                Notifications.notifyExposure(getApplicationContext(), "", 1);
+//                                notification_sent = true;
+////                            }
+                        }
+                    });
+                    try {
+                        Thread.sleep(1000); // AG: Time between updates (1 second)
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+
+        progressThread.start();
     }
     @Override
     public void onStart() {

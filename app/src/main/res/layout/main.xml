@@ -17,12 +17,13 @@
             android:layout_height="wrap_content"
             android:padding="12dp"
             android:text="@string/connect" />
+
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/linearLayout3"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="match_parent"
         android:layout_weight="0.31"
         android:orientation="vertical">
 
@@ -62,14 +63,37 @@
                 android:textAppearance="?android:attr/textAppearanceMedium" />
         </RelativeLayout>
 
-        <ProgressBar
-            android:id="@+id/progressBar"
-            style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
+        <FrameLayout
+            android:id="@+id/frameLayout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:progress="30"
-            android:visibility="visible"
-            tools:visibility="visible" />
+            android:layout_height="wrap_content"
+            android:layout_marginStart="50dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="50dp"
+            android:layout_marginBottom="10dp">
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                style="@android:style/Widget.ProgressBar.Horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:progress="@string/exposure"
+                android:textAlignment="center" />
+
+            <TextView
+                android:id="@+id/progressPercent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/exposure_percent"
+                android:textColor="@android:color/white"
+                android:textSize="20sp" />
+
+        </FrameLayout>
+
+        <!--style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"-->
+
 
         <!--<RelativeLayout-->
         <!--android:id="@+id/DataLayout"-->
@@ -122,6 +146,27 @@
         <!--android:visibility="gone" />-->
 
         <!--</RelativeLayout>-->
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="TextView" />
+
+        <LinearLayout
+            android:id="@+id/linearLayout2"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/button_reset"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:text="@string/Reset" />
+        </LinearLayout>
     </LinearLayout>
+
+
 
 </LinearLayout>
