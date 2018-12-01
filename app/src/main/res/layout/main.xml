@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:id="@+id/ConnectLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_select"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="12dp"
+            android:text="@string/connect" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout3"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_weight="0.31"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:id="@+id/DeviceLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/deviceLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentTop="true"
+                android:text="@string/device" />
+
+            <TextView
+                android:id="@+id/deviceName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_marginLeft="18dp"
+                android:layout_toRightOf="@+id/deviceLabel"
+                android:text="@string/no_device"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <TextView
+                android:id="@+id/rssival"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentRight="true"
+                android:text="_"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+        </RelativeLayout>
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:progress="30"
+            android:visibility="visible"
+            tools:visibility="visible" />
+
+        <!--<RelativeLayout-->
+        <!--android:id="@+id/DataLayout"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="292dp"-->
+        <!--android:layout_weight="4.11"-->
+        <!--android:orientation="vertical">-->
+
+        <!--// AG: Removed Send Text function-->
+
+
+        <!--// AG: Removed entry box-->
+        <!--<EditText-->
+        <!--android:id="@+id/sendText"-->
+        <!--android:layout_width="102dp"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_alignParentLeft="true"-->
+        <!--android:layout_alignParentBottom="true"-->
+        <!--android:layout_toLeftOf="@+id/sendButton"-->
+        <!--android:ems="10"-->
+        <!--android:enabled="false"-->
+        <!--android:fontFamily="1"-->
+        <!--android:lines="1"-->
+        <!--android:maxLength="20"-->
+        <!--android:maxLines="1"-->
+        <!--android:shadowRadius="1"-->
+        <!--android:visibility="gone" />-->
+
+        <!--// AG: Removed continuous stream of data updates-->
+        <!--<ListView-->
+        <!--android:id="@+id/listMessage"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_above="@+id/sendButton"-->
+        <!--android:layout_alignParentLeft="true"-->
+        <!--android:layout_alignParentTop="true"-->
+        <!--android:visibility="gone">-->
+        <!--</ListView>-->
+
+        <!--// AG: Removed Send button-->
+
+        <!--<Button-->
+        <!--android:id="@+id/sendButton"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_alignParentRight="true"-->
+        <!--android:layout_alignParentBottom="true"-->
+        <!--android:enabled="false"-->
+        <!--android:text="Send"-->
+        <!--android:visibility="gone" />-->
+
+        <!--</RelativeLayout>-->
+    </LinearLayout>
+
+</LinearLayout>
