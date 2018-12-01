@@ -23,9 +23,6 @@
 
 package com.nordicsemi.nrfUARTv2;
 
-
-
-
 import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
 import java.util.Date;
@@ -57,6 +54,8 @@ import android.os.Message;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -86,6 +85,10 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
     private ArrayAdapter<String> listAdapter;
     private Button btnConnectDisconnect,btnSend;
     private EditText edtMessage;
+
+    // AG: Initializing variables
+    int num_notifs = 1;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -100,68 +103,103 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
         listAdapter = new ArrayAdapter<String>(this, R.layout.message_detail);
         messageListView.setAdapter(listAdapter);
         messageListView.setDivider(null);
-        btnConnectDisconnect=(Button) findViewById(R.id.btn_select);
+        btnConnectDisconnect=(Button) findViewById(R.id.action_bluetooth);
         btnSend=(Button) findViewById(R.id.sendButton);
         edtMessage = (EditText) findViewById(R.id.sendText);
         service_init();
 
-     
-       
-        // Handle Disconnect & Connect button
-        btnConnectDisconnect.setOnClickListener(new View.OnClickListener() {
-            @Override
+        // AG: Created Notification button to test functionality
+        final Button test_notif_button = (Button) findViewById(R.id.test_notif_button);
+        test_notif_button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                if (!mBtAdapter.isEnabled()) {
-                    Log.i(TAG, "onClick - BT not enabled yet");
-                    Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                    startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
-                }
-                else {
-                	if (btnConnectDisconnect.getText().equals("Connect")){
-                		
-                		//Connect button pressed, open DeviceListActivity class, with popup windows that scan for devices
-                		
-            			Intent newIntent = new Intent(MainActivity.this, DeviceListActivity.class);
-            			startActivityForResult(newIntent, REQUEST_SELECT_DEVICE);
-        			} else {
-        				//Disconnect button pressed
-        				if (mDevice!=null)
-        				{
-        					mService.disconnect();
-        					
-        				}
-        			}
-                }
+                NotificationStatus.notify(getApplicationContext(), "", num_notifs);
+                num_notifs++;
             }
         });
+
+        // AG: Removed Send function
         // Handle Send button
-        btnSend.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-            	EditText editText = (EditText) findViewById(R.id.sendText);
-            	String message = editText.getText().toString();
-            	byte[] value;
-				try {
-					//send data to service
-					value = message.getBytes("UTF-8");
-					mService.writeRXCharacteristic(value);
-					//Update the log with time stamp
-					String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
-					listAdapter.add("["+currentDateTimeString+"] TX: "+ message);
-               	 	messageListView.smoothScrollToPosition(listAdapter.getCount() - 1);
-               	 	edtMessage.setText("");
-				} catch (UnsupportedEncodingException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-                
-            }
-        });
+//        btnSend.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//            	EditText editText = (EditText) findViewById(R.id.sendText);
+//            	String message = editText.getText().toString();
+//            	byte[] value;
+//				try {
+//					//send data to service
+//					value = message.getBytes("UTF-8");
+//					mService.writeRXCharacteristic(value);
+//					//Update the log with time stamp
+//					String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
+//					listAdapter.add("["+currentDateTimeString+"] TX: "+ message);
+//               	 	messageListView.smoothScrollToPosition(listAdapter.getCount() - 1);
+//               	 	edtMessage.setText("");
+//				} catch (UnsupportedEncodingException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//
+//            }
+//        });
      
         // Set initial UI state
         
     }
-    
+
+    // AG: Added menu
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            // AG: onClick, navigates from main page to settings page
+            startActivity(new Intent(this, SettingsActivity.class));
+            return true;
+        }
+        else if (id == R.id.action_bluetooth) {
+            // Handle Disconnect & Connect button
+//            btnConnectDisconnect.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    if (!mBtAdapter.isEnabled()) {
+//                        Log.i(TAG, "Bluetooth not enabled yet");
+//                        Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+//                        startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
+//                    }
+//                    else {
+//                        if (btnConnectDisconnect.getText().equals(R.string.action_bluetooth)){
+
+                            //Connect button pressed, open DeviceListActivity class, with popup windows that scan for devices
+
+            Intent newIntent = new Intent(MainActivity.this, DeviceListActivity.class);
+            startActivityForResult(newIntent, REQUEST_SELECT_DEVICE);
+//                        } else {
+//                            //Disconnect button pressed
+//                            if (mDevice!=null)
+//                            {
+//                                mService.disconnect();
+//
+//                            }
+//                        }
+//                    }
+//                }
+//            });
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
     //UART service connected/disconnected
     private ServiceConnection mServiceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder rawBinder) {
