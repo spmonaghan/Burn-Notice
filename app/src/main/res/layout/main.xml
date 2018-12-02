@@ -91,7 +91,7 @@
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentTop="true"
                 android:layout_marginLeft="80dp"
-                android:layout_marginTop="15dp"
+                android:layout_marginTop="100dp"
                 android:text="@string/device" />
 
             <TextView
@@ -100,7 +100,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentTop="true"
                 android:layout_marginLeft="10dp"
-                android:layout_marginTop="15dp"
+                android:layout_marginTop="100dp"
                 android:layout_toRightOf="@+id/deviceLabel"
                 android:text="@string/no_device"
                 android:textAppearance="?android:attr/textAppearanceSmall" />

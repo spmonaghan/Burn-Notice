@@ -23,15 +23,19 @@
 
 package com.nordicsemi.nrfUARTv2;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.Set;
 
 
 import com.nordicsemi.nrfUARTv2.UartService;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
@@ -43,14 +47,17 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Gravity;
@@ -62,6 +69,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -86,8 +94,15 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
     private Button btnConnectDisconnect,btnSend;
     private EditText edtMessage;
 
+
     // AG: Initializing variables
-    int num_notifs = 1;
+    private int num_notifs = 1;
+    private int cumul_irradiance = 0;
+    static int user_MED = 0;
+    private int exposure_percentage = 0;
+    private int last_exposure = 0;
+    private int threshold = 80;
+    private String str_user_MED;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -108,11 +123,18 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
         edtMessage = (EditText) findViewById(R.id.sendText);
         service_init();
 
+        // AG: Create Notification Channel for Android 8+
+        Notifications.createNotificationChannel(getApplicationContext());
+
+        // AG: Recalls exposure
+        exposure_percentage = BurnNoticeSharedPrefs.getExposure(this);
+        updateProgress();
+
         // AG: Created Notification button to test functionality
         final Button test_notif_button = (Button) findViewById(R.id.test_notif_button);
         test_notif_button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                NotificationStatus.notify(getApplicationContext(), "", num_notifs);
+                Notifications.notifyExposure(getApplicationContext(), "", num_notifs);
                 num_notifs++;
             }
         });
@@ -239,12 +261,13 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
                      public void run() {
                          	String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
                              Log.d(TAG, "UART_CONNECT_MSG");
-                             btnConnectDisconnect.setText("Disconnect");
+//                             btnConnectDisconnect.setText("Disconnect");
                              edtMessage.setEnabled(true);
                              btnSend.setEnabled(true);
-                             ((TextView) findViewById(R.id.deviceName)).setText(mDevice.getName()+ " - ready");
-                             listAdapter.add("["+currentDateTimeString+"] Connected to: "+ mDevice.getName());
-                        	 	messageListView.smoothScrollToPosition(listAdapter.getCount() - 1);
+                             // AG: Replaced mDevice.getName()
+                             ((TextView) findViewById(R.id.deviceName)).setText("Connected");
+//                             listAdapter.add("["+currentDateTimeString+"] Connected to: "+ mDevice.getName());
+//                        	 	messageListView.smoothScrollToPosition(listAdapter.getCount() - 1);
                              mState = UART_PROFILE_CONNECTED;
                      }
             	 });
@@ -256,11 +279,11 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
                      public void run() {
                     	 	 String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
                              Log.d(TAG, "UART_DISCONNECT_MSG");
-                             btnConnectDisconnect.setText("Connect");
+//                             btnConnectDisconnect.setText("Connect");
                              edtMessage.setEnabled(false);
                              btnSend.setEnabled(false);
                              ((TextView) findViewById(R.id.deviceName)).setText("Not Connected");
-                             listAdapter.add("["+currentDateTimeString+"] Disconnected to: "+ mDevice.getName());
+//                             listAdapter.add("["+currentDateTimeString+"] Disconnected to: "+ mDevice.getName());
                              mState = UART_PROFILE_DISCONNECTED;
                              mService.close();
                             //setUiState();
@@ -284,12 +307,29 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
                          	String text = new String(txValue, "UTF-8");
                          	String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
 
+                                 // AG: if before value < thresh; new value > thresh, then notify
+                                 last_exposure = exposure_percentage;
+
+                         	    exposure_percentage = calculateExposure(text);
+
+                         	    // AG: Stores exposure for next time app is opened
+                         	    BurnNoticeSharedPrefs.setExposure(getApplicationContext(), exposure_percentage);
+
+                         	    updateProgress();
+
+                                 // AG: If beyond threshold exposure, send notification
+                                 if (last_exposure < threshold && exposure_percentage >= threshold) {
+                                     Notifications.notifyExposure(getApplicationContext(), "", num_notifs);
+                                     num_notifs++;
+                                 }
+
                          	    // AG: Removing continuous printing to main screen
 //                        	 	listAdapter.add("["+currentDateTimeString+"] RX: "+text);
 //                        	 	messageListView.smoothScrollToPosition(listAdapter.getCount() - 1);
 
                          } catch (Exception e) {
                              Log.e(TAG, e.toString());
+                             e.printStackTrace();
                          }
                      }
                  });
@@ -303,6 +343,121 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
             
         }
     };
+
+    int calculateExposure(String text) {
+
+        int[] mask = new int[10];
+
+        for (int i = 0; i < text.length(); i++)
+        {
+            int ASCII = Integer.valueOf(text.charAt(i));
+
+            if (ASCII == 45 || (ASCII >= 48 && ASCII <= 57)) {
+                mask[i] = 1;
+            }
+            else {
+                mask[i] = 0;
+            }
+        }
+
+        StringBuilder modified_text = new StringBuilder();
+
+        for (int j = 0; j <= text.length(); j++)
+        {
+            if (mask[j] == 1)
+            {
+                modified_text.append(text.charAt(j));
+            }
+        }
+
+        text = modified_text.toString();
+
+        int incoming_data = Integer.parseInt(text); // AG: convert string to double
+        if (incoming_data < 0) { // AG: if negative value, assume negligible and approximately 0
+            incoming_data = 0;
+        }
+        else {
+            incoming_data = incoming_data + 15;
+        }
+
+        int instant_irradiance = incoming_data / 185; // AG: Experimentally derived scalar
+                cumul_irradiance = cumul_irradiance + instant_irradiance;
+        Log.d(TAG, "Cumulative Exposure: " + String.valueOf(cumul_irradiance));
+        user_MED = getMED();
+
+        if (exposure_percentage >=100)
+        {
+            return  exposure_percentage = 100;
+        }
+        else{
+            exposure_percentage = (int) ((double) cumul_irradiance / (double) user_MED * 100);
+            return exposure_percentage;
+        }
+
+    }
+
+    private int getMED() {
+        str_user_MED = PreferenceManager.getDefaultSharedPreferences(this).getString(getResources().getString(R.string.skin_type_key), "15");
+        user_MED = Integer.valueOf(str_user_MED);
+
+//        switch (pref_string){
+//            case "Type I: Always burns, doesn\'t tan":
+//                user_MED = 15;
+//                break;
+//            case "Type II: Burns easily":
+//                user_MED = 25;
+//                break;
+//            case "Type III: Tans after initial burn":
+//                user_MED = 30;
+//                break;
+//            case "Type IV: Burns minimally, tans easily":
+//                user_MED = 40;
+//                break;
+//            case "Type V: Rarely burns, tans well":
+//                user_MED = 60;
+//                break;
+//            case "Type VI: Never burns, always tan":
+//                user_MED = 90;
+//                break;
+//        }
+
+        Log.d(TAG, "User MED is now: " + user_MED);
+        return user_MED;
+    }
+
+    // AG: Creating method to continuously update progress bar
+
+    private void updateProgress() {
+//
+////        Thread progressThread = new Thread(new Runnable() {
+//
+////            public void run() {
+////                while (true) {
+//            // AG: Update progress bar
+//
+//            runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+        final ProgressBar progressBar = findViewById(R.id.progressBar);
+        final TextView progressPercent = findViewById(R.id.progressPercent);
+
+        // AG: Change % value of progress TextView
+        progressBar.setProgress(exposure_percentage);
+        Log.d(TAG, "Exposure Percentage: " + String.valueOf(exposure_percentage));
+        progressPercent.setText(String.valueOf(progressBar.getProgress()) + " %");
+//                }
+//            });
+//                    try {
+//                        Thread.sleep(1000); // AG: Time between updates (1 second)
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
+//        });
+
+//        progressThread.start();
+    }
 
     private void service_init() {
         Intent bindIntent = new Intent(this, UartService.class);
