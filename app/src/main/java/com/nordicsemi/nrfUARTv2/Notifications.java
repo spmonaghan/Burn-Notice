@@ -115,7 +115,7 @@ public class Notifications {
                         .setBigContentTitle(title)
 
                         // AG: Comment shown at bottom of notification
-                        .setSummaryText("We recommend reapplying sunscreen or shade soon!"))
+                        .setSummaryText(""))
 
                 // Example additional actions for this notification. These will
                 // only show on devices running Android 4.1 or later, so you

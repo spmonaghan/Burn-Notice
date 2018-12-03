@@ -13,15 +13,6 @@
         android:title="@string/pref_title_display_name"
         android:visibility="visible" />
 
-
-    <!--<SwitchPreference-->
-        <!--android:defaultValue="false"-->
-        <!--android:key="example_switch"-->
-        <!--android:switchTextOff="@string/popup_no"-->
-        <!--android:switchTextOn="@string/popup_yes"-->
-        <!--android:title="@string/pref_wearing_sunscreen"-->
-        <!--android:visibility="gone" />-->
-
     <!-- NOTE: Hide buttons to simplify the UI. Users can touch outside the dialog to
          dismiss it. -->
     <!-- NOTE: ListPreference's summary should be set to its value by the activity code. -->

@@ -23,22 +23,14 @@
 
 package com.nordicsemi.nrfUARTv2;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
 import java.util.Date;
-import java.util.Set;
 
-
-import com.nordicsemi.nrfUARTv2.UartService;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothManager;
 
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -47,12 +39,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -60,14 +47,12 @@ import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RadioGroup;
@@ -98,11 +83,12 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
     // AG: Initializing variables
     private int num_notifs = 1;
     private int cumul_irradiance = 0;
-    static int user_MED = 0;
+    private int user_MED = 0;
     private int exposure_percentage = 0;
     private int last_exposure = 0;
     private int threshold = 80;
     private String str_user_MED;
+    private boolean demo_mode;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -130,14 +116,7 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
         exposure_percentage = BurnNoticeSharedPrefs.getExposure(this);
         updateProgress();
 
-        // AG: Created Notification button to test functionality
-        final Button test_notif_button = (Button) findViewById(R.id.test_notif_button);
-        test_notif_button.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                Notifications.notifyExposure(getApplicationContext(), "", num_notifs);
-                num_notifs++;
-            }
-        });
+        checkIfDemo();
 
         // AG: Removed Send function
         // Handle Send button
@@ -166,6 +145,62 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
      
         // Set initial UI state
         
+    }
+
+    private void checkIfDemo() {
+
+        Log.d(TAG, "Demo mode value: " + demo_mode);
+
+        final Button test_notif_button = (Button) findViewById(R.id.test_notif_button);
+        final Button test_increment_button = (Button) findViewById(R.id.test_increment_button);
+        final Button reset_button = (Button) findViewById(R.id.reset_button);
+        TextView deviceLabel = (TextView)findViewById(R.id.deviceLabel);
+        TextView deviceName = (TextView)findViewById(R.id.deviceName);
+
+
+        if (!demo_mode) {   // Set up dev options
+
+            // AG: Created Notification button to test functionality
+            test_notif_button.setVisibility(View.VISIBLE);
+            test_notif_button.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    Notifications.notifyExposure(getApplicationContext(), "", num_notifs);
+                    num_notifs++;
+                }
+            });
+
+            // AG: Created Increment button to artificially increment
+            test_increment_button.setVisibility(View.VISIBLE);
+            test_increment_button.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    exposure_percentage = exposure_percentage + 10;
+                    updateProgress();
+                    checkThreshold();
+                }
+            });
+
+            // AG: Created Reset button to artificially increment
+            reset_button.setVisibility(View.VISIBLE);
+            reset_button.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    exposure_percentage = 0;
+                    updateProgress();
+                }
+            });
+
+            // AG: Created text to show Bluetooth connection status
+            deviceLabel.setVisibility(View.VISIBLE);
+            deviceName.setVisibility(View.VISIBLE);
+        }
+        else if (demo_mode)
+        {
+            test_notif_button.setVisibility(View.INVISIBLE);
+            test_increment_button.setVisibility(View.INVISIBLE);
+            reset_button.setVisibility(View.INVISIBLE);
+            deviceLabel.setVisibility(View.INVISIBLE);
+            deviceName.setVisibility(View.INVISIBLE);
+        }
+
     }
 
     // AG: Added menu
@@ -217,6 +252,10 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
 //                    }
 //                }
 //            });
+        }
+        else if (id == R.id.action_demo) {
+            demo_mode = !demo_mode;
+            onResume();
         }
 
         return super.onOptionsItemSelected(item);
@@ -307,8 +346,8 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
                          	String text = new String(txValue, "UTF-8");
                          	String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
 
-                                 // AG: if before value < thresh; new value > thresh, then notify
-                                 last_exposure = exposure_percentage;
+                                // AG: if before value < thresh; new value > thresh, then notify
+                                last_exposure = exposure_percentage;
 
                          	    exposure_percentage = calculateExposure(text);
 
@@ -317,11 +356,7 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
 
                          	    updateProgress();
 
-                                 // AG: If beyond threshold exposure, send notification
-                                 if (last_exposure < threshold && exposure_percentage >= threshold) {
-                                     Notifications.notifyExposure(getApplicationContext(), "", num_notifs);
-                                     num_notifs++;
-                                 }
+                                checkThreshold();
 
                          	    // AG: Removing continuous printing to main screen
 //                        	 	listAdapter.add("["+currentDateTimeString+"] RX: "+text);
@@ -343,6 +378,13 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
             
         }
     };
+
+    private void checkThreshold() {
+        // AG: If beyond threshold exposure, send notification
+        if (last_exposure < threshold && exposure_percentage >= threshold) {
+            Notifications.notifyExposure(getApplicationContext(), "", 0);
+        }
+    }
 
     int calculateExposure(String text) {
 
@@ -377,10 +419,10 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
             incoming_data = 0;
         }
         else {
-            incoming_data = incoming_data + 15;
+            incoming_data = incoming_data + 13;
         }
 
-        int instant_irradiance = incoming_data / 185; // AG: Experimentally derived scalar
+        int instant_irradiance = incoming_data / 195; // AG: Experimentally derived scalar
                 cumul_irradiance = cumul_irradiance + instant_irradiance;
         Log.d(TAG, "Cumulative Exposure: " + String.valueOf(cumul_irradiance));
         user_MED = getMED();
@@ -522,6 +564,8 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
         }
+
+        checkIfDemo();
  
     }
 
