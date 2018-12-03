@@ -27,6 +27,7 @@ import java.text.DateFormat;
 import java.util.Date;
 
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -40,6 +41,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.res.Configuration;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -144,7 +147,11 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
 //        });
      
         // Set initial UI state
-        
+
+        // AG: Change color scheme
+        ActionBar bar = getActionBar();
+//        bar.setBackgroundDrawable(new ColorDrawable(Color.YELLOW));
+
     }
 
     private void checkIfDemo() {
@@ -173,6 +180,7 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
             test_increment_button.setVisibility(View.VISIBLE);
             test_increment_button.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
+                    last_exposure = exposure_percentage;
                     exposure_percentage = exposure_percentage + 10;
                     updateProgress();
                     checkThreshold();
