@@ -49,7 +49,7 @@ public class Notifications {
         final Resources res = context.getResources();
 
         // This image is used as the notification's large icon (thumbnail).
-        final Bitmap picture = BitmapFactory.decodeResource(res, R.drawable.sunshine_icon);
+        final Bitmap picture = BitmapFactory.decodeResource(res, R.drawable.ic_ffef00_sunshine);
 
 
         final String ticker = exampleString;
@@ -68,7 +68,7 @@ public class Notifications {
                 // notification title, and text.
 
                 // AG: Cannot exclude small icon, or notification will not send
-                .setSmallIcon(R.drawable.sunshine_icon)
+                .setSmallIcon(R.drawable.ic_ffef00_sunshine)
                 .setContentTitle(title)
                 .setContentText(text)
 
@@ -105,7 +105,7 @@ public class Notifications {
                         PendingIntent.getActivity(
                                 context,
                                 0,
-                                new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.google.com")),
+                                new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.cdc.gov/cancer/skin/basic_info/sun-safety.htm")),
                                 PendingIntent.FLAG_UPDATE_CURRENT))
 
                 // Show expanded text content on devices running Android 4.1 or

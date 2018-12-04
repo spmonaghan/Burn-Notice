@@ -41,6 +41,7 @@
     <string name="reset"> Reset </string>
     <string name="send"> Send </string>
     <string name="main_message_top"> Your child has reached </string>
+    <string name="current_exposure"> Current Exposure (in mW/cm^2): </string>
     <string name="exposure_percent"> 0 % </string>
     <string name="main_message_bottom"> of their daily \n recommended \n sun exposure. </string>
     <string name="unpair">unpair</string>

@@ -85,6 +85,7 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
 
     // AG: Initializing variables
     private int num_notifs = 1;
+    private int instant_irradiance = 0;
     private int cumul_irradiance = 0;
     private int user_MED = 0;
     private int exposure_percentage = 0;
@@ -150,8 +151,8 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
 
         // AG: Change color scheme
         ActionBar bar = getActionBar();
-//        bar.setBackgroundDrawable(new ColorDrawable(Color.YELLOW));
-
+        bar.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#81D4FA")));
+        getActionBar().setIcon(R.drawable.ic_ffef00_sunshine);
     }
 
     private void checkIfDemo() {
@@ -163,7 +164,7 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
         final Button reset_button = (Button) findViewById(R.id.reset_button);
         TextView deviceLabel = (TextView)findViewById(R.id.deviceLabel);
         TextView deviceName = (TextView)findViewById(R.id.deviceName);
-
+        TextView current_exposure = (TextView)findViewById(R.id.current_exposure);
 
         if (!demo_mode) {   // Set up dev options
 
@@ -196,9 +197,12 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
                 }
             });
 
-            // AG: Created text to show Bluetooth connection status
+            // AG: Created text to show developer status
+
             deviceLabel.setVisibility(View.VISIBLE);
             deviceName.setVisibility(View.VISIBLE);
+            current_exposure.setVisibility(View.VISIBLE);
+            current_exposure.setText("Current Exposure: " + instant_irradiance);
         }
         else if (demo_mode)
         {
@@ -207,6 +211,7 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
             reset_button.setVisibility(View.INVISIBLE);
             deviceLabel.setVisibility(View.INVISIBLE);
             deviceName.setVisibility(View.INVISIBLE);
+            current_exposure.setVisibility(View.INVISIBLE);
         }
 
     }
@@ -430,7 +435,7 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
             incoming_data = incoming_data + 13;
         }
 
-        int instant_irradiance = incoming_data / 195; // AG: Experimentally derived scalar
+        instant_irradiance = incoming_data / 195; // AG: Experimentally derived scalar
                 cumul_irradiance = cumul_irradiance + instant_irradiance;
         Log.d(TAG, "Cumulative Exposure: " + String.valueOf(cumul_irradiance));
         user_MED = getMED();
