@@ -85,10 +85,10 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
 
     // AG: Initializing variables
     private int num_notifs = 1;
-    private int instant_irradiance = 0;
-    private int cumul_irradiance = 0;
+    private int instant_irradiance;
+    private int cumul_irradiance;
     private int user_MED = 0;
-    private int exposure_percentage = 0;
+    private int exposure_percentage;
     private int last_exposure = 0;
     private int threshold = 80;
     private String str_user_MED;
@@ -120,7 +120,7 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
         exposure_percentage = BurnNoticeSharedPrefs.getExposure(this);
         updateProgress();
 
-        checkIfDemo();
+//        checkIfDemo();
 
         // AG: Removed Send function
         // Handle Send button
@@ -155,66 +155,66 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
         getActionBar().setIcon(R.drawable.ic_ffef00_sunshine);
     }
 
-    private void checkIfDemo() {
-
-        Log.d(TAG, "Demo mode value: " + demo_mode);
-
-        final Button test_notif_button = (Button) findViewById(R.id.test_notif_button);
-        final Button test_increment_button = (Button) findViewById(R.id.test_increment_button);
-        final Button reset_button = (Button) findViewById(R.id.reset_button);
-        TextView deviceLabel = (TextView)findViewById(R.id.deviceLabel);
-        TextView deviceName = (TextView)findViewById(R.id.deviceName);
-        TextView current_exposure = (TextView)findViewById(R.id.current_exposure);
-
-        if (!demo_mode) {   // Set up dev options
-
-            // AG: Created Notification button to test functionality
-            test_notif_button.setVisibility(View.VISIBLE);
-            test_notif_button.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    Notifications.notifyExposure(getApplicationContext(), "", num_notifs);
-                    num_notifs++;
-                }
-            });
-
-            // AG: Created Increment button to artificially increment
-            test_increment_button.setVisibility(View.VISIBLE);
-            test_increment_button.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    last_exposure = exposure_percentage;
-                    exposure_percentage = exposure_percentage + 10;
-                    updateProgress();
-                    checkThreshold();
-                }
-            });
-
-            // AG: Created Reset button to artificially increment
-            reset_button.setVisibility(View.VISIBLE);
-            reset_button.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    exposure_percentage = 0;
-                    updateProgress();
-                }
-            });
-
-            // AG: Created text to show developer status
-
-            deviceLabel.setVisibility(View.VISIBLE);
-            deviceName.setVisibility(View.VISIBLE);
-            current_exposure.setVisibility(View.VISIBLE);
-            current_exposure.setText("Current Exposure: " + instant_irradiance);
-        }
-        else if (demo_mode)
-        {
-            test_notif_button.setVisibility(View.INVISIBLE);
-            test_increment_button.setVisibility(View.INVISIBLE);
-            reset_button.setVisibility(View.INVISIBLE);
-            deviceLabel.setVisibility(View.INVISIBLE);
-            deviceName.setVisibility(View.INVISIBLE);
-            current_exposure.setVisibility(View.INVISIBLE);
-        }
-
-    }
+//    private void checkIfDemo() {
+//
+//        Log.d(TAG, "Demo mode value: " + demo_mode);
+//
+//        final Button test_notif_button = (Button) findViewById(R.id.test_notif_button);
+//        final Button test_increment_button = (Button) findViewById(R.id.test_increment_button);
+//        final Button reset_button = (Button) findViewById(R.id.reset_button);
+//        TextView deviceLabel = (TextView)findViewById(R.id.deviceLabel);
+//        TextView deviceName = (TextView)findViewById(R.id.deviceName);
+//        TextView current_exposure = (TextView)findViewById(R.id.current_exposure);
+//
+//        if (!demo_mode) {   // Set up dev options
+//
+//            // AG: Created Notification button to test functionality
+//            test_notif_button.setVisibility(View.VISIBLE);
+//            test_notif_button.setOnClickListener(new View.OnClickListener() {
+//                public void onClick(View v) {
+//                    Notifications.notifyExposure(getApplicationContext(), "", num_notifs);
+//                    num_notifs++;
+//                }
+//            });
+//
+//            // AG: Created Increment button to artificially increment
+//            test_increment_button.setVisibility(View.VISIBLE);
+//            test_increment_button.setOnClickListener(new View.OnClickListener() {
+//                public void onClick(View v) {
+//                    last_exposure = exposure_percentage;
+//                    exposure_percentage = exposure_percentage + 10;
+//                    updateProgress();
+//                    checkThreshold();
+//                }
+//            });
+//
+//            // AG: Created Reset button to artificially increment
+//            reset_button.setVisibility(View.VISIBLE);
+//            reset_button.setOnClickListener(new View.OnClickListener() {
+//                public void onClick(View v) {
+//                    exposure_percentage = 0;
+//                    updateProgress();
+//                }
+//            });
+//
+//            // AG: Created text to show developer status
+//
+//            deviceLabel.setVisibility(View.VISIBLE);
+//            deviceName.setVisibility(View.VISIBLE);
+//            current_exposure.setVisibility(View.VISIBLE);
+//            current_exposure.setText("Current Exposure: " + instant_irradiance);
+//        }
+//        else if (demo_mode)
+//        {
+//            test_notif_button.setVisibility(View.INVISIBLE);
+//            test_increment_button.setVisibility(View.INVISIBLE);
+//            reset_button.setVisibility(View.INVISIBLE);
+//            deviceLabel.setVisibility(View.INVISIBLE);
+//            deviceName.setVisibility(View.INVISIBLE);
+//            current_exposure.setVisibility(View.INVISIBLE);
+//        }
+//
+//    }
 
     // AG: Added menu
 
@@ -578,7 +578,7 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
             startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
         }
 
-        checkIfDemo();
+//        checkIfDemo();
  
     }
 
