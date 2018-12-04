@@ -78,10 +78,10 @@
     <string name="scan">Scan</string>
     <string name="cancel">Cancel</string>
 
-    <string name="notification_title"> Burn Notice: %1$s</string>
+    <string name="status_notification_title_template"> Burn Notice: %1$s</string>
 
     <!-- TODO: remove this placeholder text -->
-    <string name="notification_text"> Your child is at risk of developing
+    <string name="status_notification_placeholder_text_template"> Your child is at risk of developing
         a sunburn. %1$s We recommend re-applying sunscreen or finding shade soon!
     </string>
 
@@ -109,6 +109,7 @@
     <string name="demo_key"> DEMO-KEY </string>
 
 
+=======
     <!-- AG: Fitzpatrick Scale Skin Types -->
     <string name="skin_types"> Skin type </string>
     <string-array name="list_skin_types">

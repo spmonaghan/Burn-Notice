@@ -57,8 +57,7 @@
 
         <activity
             android:name=".SettingsActivity"
-            android:label="@string/title_activity_settings"
-            android:parentActivityName=".MainActivity"></activity>
+            android:label="@string/title_activity_settings"></activity>
     </application>
 
 </manifest>

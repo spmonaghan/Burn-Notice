@@ -47,26 +47,6 @@ public class SettingsActivity extends PreferenceActivity {
         public boolean onPreferenceChange(Preference preference, Object value) {
             String stringValue = value.toString();
 
-            // AG: Tried to make non-static...womp womp.
-//            if (preference.getKey().equals(SettingsActivity.this.getResources().getString(R.string.child_name_key)))
-//            {
-//                if (preference instanceof EditTextPreference) {
-//                    // AG: Value of child name entered
-//                    EditTextPreference child_name = (EditTextPreference) preference;
-//                    BurnNoticeSharedPrefs.setChildName(getApplicationContext(), child_name.getText());
-//                }
-//            }
-//            else if (preference.getKey().equals(SettingsActivity.this.getResources().getString(R.string.skin_type_key)))
-//            {
-//                if (preference instanceof ListPreference) {
-//                    // AG: Value of skin type entered
-//                    ListPreference skin_type = (ListPreference) preference;
-//                    BurnNoticeSharedPrefs.setSkinType(getApplicationContext(), Integer.valueOf(skin_type.getValue()));
-//                }
-//            }
-
-                // AG: Removed default pref behavior
-
             if (preference instanceof ListPreference) {
                 // For list preferences, look up the correct display value in
                 // the preference's 'entries' list.
@@ -107,7 +87,6 @@ public class SettingsActivity extends PreferenceActivity {
                 // simple string representation.
                 preference.setSummary(stringValue);
             }
-
             return true;
         }
     };
@@ -172,7 +151,14 @@ public class SettingsActivity extends PreferenceActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
 
+        //noinspection SimplifiableIfStatement
+        if (id == android.R.id.home) {
+            // AG: onClick, navigates from settings to main
+            startActivity(new Intent(this, MainActivity.class));
+            return true;
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -212,8 +198,8 @@ public class SettingsActivity extends PreferenceActivity {
             // to their values. When their values change, their summaries are
             // updated to reflect the new value, per the Android Design
             // guidelines.
-            bindPreferenceSummaryToValue(findPreference(getResources().getString(R.string.child_name_key)));
-            bindPreferenceSummaryToValue(findPreference(getResources().getString(R.string.skin_type_key)));
+            bindPreferenceSummaryToValue(findPreference("example_text"));
+            bindPreferenceSummaryToValue(findPreference("example_list"));
         }
 
         @Override
